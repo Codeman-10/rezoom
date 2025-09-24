@@ -10,7 +10,7 @@ export default function Dashboard() {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold">Welcome, {session.user?.email}</h1>
+      <h1 className="text-xl font-bold">Welcome, {session.user?.name}</h1>
       <p>This is your dashboard 🎉</p>
       <Button onClick={() => signOut()} className="mt-4">Logout</Button>
     </div>

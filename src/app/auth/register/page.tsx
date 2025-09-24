@@ -9,9 +9,19 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("")
 
   async function handleRegister() {
-    // 🔹 For now, just redirect (no DB)
-    alert("Registered successfully (mock). Please sign in with demo@rezoom.com / 1234")
-    window.location.href = "/auth/signin"
+    const res = await fetch("/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    })
+
+    if (res.ok) {
+      alert("Registered successfully ✅. Please sign in.")
+      window.location.href = "/auth/signin"
+    } else {
+      const err = await res.json()
+      alert(`Error: ${err.error || "Something went wrong"}`)
+    }
   }
 
   return (
@@ -20,7 +30,7 @@ export default function RegisterPage() {
         <h1 className="text-xl font-bold mb-4">Register</h1>
         <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full Name" />
         <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="mt-2" />
-        <Input value={password} type="password" onChange={(e) => setPassword(e.target.value)} placeholder="Password" className="mt-2" />
+        <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" className="mt-2" />
         <Button onClick={handleRegister} className="w-full mt-4">Register</Button>
       </div>
     </div>
