@@ -30,5 +30,15 @@ npm run dev
 
 
 
+//things to concentrate 
+## sections getting cutt off at the end
+### alignment / font sie and color style 
+## download as word and pdf 
+### ats score dispaly 
+### progressbar for loading
 
+
+v2//
+if spell mistakes and grammar notify user 
+## enhacenents also
 ---

@@ -1,15 +1,13 @@
-import NextAuth from "next-auth"
+import NextAuth, { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { db } from "@/db"
+import { users } from "@/db/schema/user" 
 import bcrypt from "bcrypt"
-import { eq } from "drizzle-orm"
-import { users } from "@/db/schema/user"
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
-      // 👇 define the input fields for TS
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
@@ -17,22 +15,36 @@ const handler = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null
 
-        // lookup user in DB
         const user = await db.query.users.findFirst({
-          where: eq(users.email, credentials.email),
+          where: (users, { eq }) => eq(users.email, credentials.email),
         })
         if (!user) return null
 
         const isValid = await bcrypt.compare(credentials.password, user.passwordHash)
         if (!isValid) return null
 
-        // what becomes session.user
         return { id: user.id, name: user.name, email: user.email }
       },
     }),
   ],
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
-})
 
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = (user as any).id
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token?.id) {
+        session.user.id = token.id as string
+      }
+      return session
+    },
+  },
+}
+
+const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }
