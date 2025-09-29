@@ -6,50 +6,47 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useResumeStore } from "@/store/resumeStore";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function HomePage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const setResume = useResumeStore((state) => state.setResume);
+  const setAtsScore = useResumeStore((state) => state.setAtsScore);
   const router = useRouter();
 
   async function handleBuild() {
-    if (!input.trim()) return;
-    setLoading(true);
-
-    const res = await fetch("/api/ai/parse-resume", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: input }),
-    });
-
-    const data = await res.json();
-    if (res.ok && data.resume) {
-      setResume(data.resume);
+    if (!input.trim()) {
+      toast.error("⚠️ Please enter your resume details before building.");
+      return;
     }
-    setLoading(false);
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/ai/parse-resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: input }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.resume) {
+        setResume(data.resume);
+        setAtsScore(data.ats_score || null);
+        toast.success("🎉 Resume built successfully!");
+        router.push("/resume/preview");
+      } else {
+        toast.error(data.error || "❌ Failed to build resume.");
+      }
+    } catch (err) {
+      toast.error("⚡ Something went wrong. Try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <nav className="flex justify-between items-center px-8 py-4 shadow bg-white">
-        <Link href="/" className="text-2xl font-bold text-blue-600">
-          ReZoom
-        </Link>
-        <div className="space-x-6">
-          <Link href="#features" className="hover:text-blue-500">
-            Features
-          </Link>
-          <Link href="#pricing" className="hover:text-blue-500">
-            Pricing
-          </Link>
-          <Link href="/auth/signin" className="hover:text-blue-500">
-            Login
-          </Link>
-          <Button className="bg-blue-600 text-white">Build Resume</Button>
-        </div>
-      </nav>
 
       {/* Hero */}
       <section className="flex flex-col items-center justify-center flex-1 bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-16">
@@ -58,8 +55,7 @@ export default function HomePage() {
           in minutes
         </h1>
         <p className="mt-4 text-gray-600 text-center max-w-2xl">
-          AI-powered, quick, and affordable — designed for students and job
-          seekers
+          AI-powered, quick, and affordable — designed for students and job seekers
         </p>
 
         <textarea
@@ -68,6 +64,12 @@ export default function HomePage() {
           placeholder="Paste your details here..."
           className="mt-8 w-full max-w-2xl h-40 p-4 border rounded-lg shadow-sm"
         />
+        <p className="text-sm text-gray-500 mt-2">
+          💡 Tip: Paste your resume text or type details like{" "}
+          <strong>Name, Email, Phone, Summary, Skills, Work Experience, Education</strong>.  
+          You can also try our{" "}
+          <button className="text-blue-600 underline">Sample Resume</button>.
+        </p>
 
         <Button
           onClick={handleBuild}
@@ -76,33 +78,6 @@ export default function HomePage() {
         >
           {loading ? "Building..." : "Build Resume"}
         </Button>
-
-        {/* Resume Card Teaser */}
-        {useResumeStore.getState().resume && (
-          <Card
-            onClick={() => router.push("/resume/preview")}
-            className="mt-10 w-[400px] h-[250px] shadow-lg cursor-pointer relative overflow-hidden"
-          >
-            <CardContent className="p-6 blur-sm select-none pointer-events-none">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {useResumeStore.getState().resume.name || "Your Resume"}
-              </h2>
-              <p className="text-gray-500">
-                {useResumeStore.getState().resume.email || "example@email.com"}{" "}
-                | {useResumeStore.getState().resume.phone || "+91-0000000000"}
-              </p>
-              <p className="mt-4">
-                {useResumeStore.getState().resume.summary?.slice(0, 100) ||
-                  "This is a blurred preview of your resume."}
-              </p>
-            </CardContent>
-            <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-sm">
-              <span className="font-semibold text-blue-600 text-lg">
-                Click to view full resume →
-              </span>
-            </div>
-          </Card>
-        )}
       </section>
 
       {/* Features */}
@@ -199,23 +174,46 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Resumes Built Section */}
+      <section
+        id="resumes-built"
+        className="py-16 bg-gray-50 px-6 md:px-20 text-center"
+      >
+        <h2 className="text-3xl font-bold mb-12">Resumes Built by Users</h2>
+        <p className="text-gray-600 mb-10">
+          Here are some examples of resumes created using ReZoom. Your resume could be next!
+        </p>
+        <div className="grid md:grid-cols-3 gap-8">
+          <Image
+            src="/templates/resume1.png"
+            alt="Resume 1"
+            width={300}
+            height={420}
+            className="shadow-md rounded border"
+          />
+          <Image
+            src="/templates/resume2.png"
+            alt="Resume 2"
+            width={300}
+            height={420}
+            className="shadow-md rounded border"
+          />
+          <Image
+            src="/templates/resume3.png"
+            alt="Resume 3"
+            width={300}
+            height={420}
+            className="shadow-md rounded border"
+          />
+        </div>
+      </section>
+
       {/* Enhanced Text */}
       <section className="py-16 bg-blue-600 text-white text-center">
         <h2 className="text-3xl font-bold">
           Over 1,000+ resumes created by students & employees — yours is next!
         </h2>
       </section>
-
-      {/* Footer */}
-      <footer className="py-6 bg-gray-800 text-gray-300 text-center">
-        <p>© 2025 ReZoom · Made in India 🇮🇳</p>
-        <div className="mt-2 space-x-4 text-sm">
-          <Link href="/about">About</Link>
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/terms">Terms</Link>
-          <Link href="/contact">Contact</Link>
-        </div>
-      </footer>
     </div>
   );
 }

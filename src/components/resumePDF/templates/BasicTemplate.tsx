@@ -3,6 +3,10 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer"
 import { ResumeData } from "@/types/resume"
 
+export interface BasicTemplateProps {
+  resume: ResumeData
+}
+
 const styles = StyleSheet.create({
   page: {
     padding: 30,
@@ -13,51 +17,18 @@ const styles = StyleSheet.create({
   },
 
   // Header
-  header: {
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 12,
-    color: "#555",
-    marginBottom: 8,
-  },
-  contact: {
-    fontSize: 10,
-    color: "#333",
-    marginBottom: 2,
-  },
-  highlight: {
-    color: "#0A66C2",
-    fontWeight: "bold",
-  },
+  header: { textAlign: "center", marginBottom: 20 },
+  name: { fontSize: 20, fontWeight: "bold", textTransform: "uppercase", marginBottom: 4 },
+  title: { fontSize: 12, color: "#555", marginBottom: 8 },
+  contact: { fontSize: 10, color: "#333", marginBottom: 2 },
+  highlight: { color: "#0A66C2", fontWeight: "bold" },
 
   // Sections
-  section: {
-    marginTop: 16,
-    marginBottom: 12,
-    paddingTop: 6,
-    borderTop: "1pt solid #eee",
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "bold",
-    marginBottom: 6,
-    textTransform: "uppercase",
-  },
+  section: { marginTop: 16, marginBottom: 12, paddingTop: 6, borderTop: "1pt solid #eee" },
+  sectionTitle: { fontSize: 13, fontWeight: "bold", marginBottom: 6, textTransform: "uppercase" },
 
   // Experience
-  jobHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 2,
-  },
+  jobHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 2 },
   jobTitle: { fontWeight: "bold", fontSize: 11 },
   company: { fontSize: 10, color: "#555" },
   duration: { fontSize: 10, color: "#0A66C2" },
@@ -67,9 +38,18 @@ const styles = StyleSheet.create({
   // Misc
   text: { marginBottom: 3 },
   italic: { fontStyle: "italic" },
+  footer: {
+    position: "absolute",
+    fontSize: 9,
+    bottom: 20,
+    left: 0,
+    right: 0,
+    textAlign: "center",
+    color: "#888",
+  },
 })
 
-export function ResumePDF({ resume }: { resume: ResumeData }) {
+export function BasicTemplate({ resume }: BasicTemplateProps) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -78,25 +58,19 @@ export function ResumePDF({ resume }: { resume: ResumeData }) {
           <Text style={styles.name}>{resume?.name}</Text>
           {resume?.title && <Text style={styles.title}>{resume?.title}</Text>}
           <Text style={styles.contact}>
-            {resume?.email && <Text style={styles.highlight}>{resume?.email}</Text>}{" "}
-            {resume?.phone && (
-              <>| <Text style={styles.highlight}>{resume?.phone}</Text></>
-            )}{" "}
-            {resume?.location && `| ${resume?.location}`}
+            {resume?.email && <Text style={styles.highlight}>{resume.email}</Text>}{" "}
+            {resume?.phone && <>| <Text style={styles.highlight}>{resume.phone}</Text></>}{" "}
+            {resume?.location && `| ${resume.location}`}
           </Text>
-          {resume?.linkedin && (
-            <Text style={styles.contact}>🔗 {resume?.linkedin}</Text>
-          )}
-          {resume?.github && (
-            <Text style={styles.contact}>💻 {resume?.github}</Text>
-          )}
+          {resume?.linkedin && <Text style={styles.contact}>🔗 {resume.linkedin}</Text>}
+          {resume?.github && <Text style={styles.contact}>💻 {resume.github}</Text>}
         </View>
 
         {/* Summary */}
         {resume?.summary && (
           <View style={styles.section} wrap={false}>
             <Text style={styles.sectionTitle}>Summary</Text>
-            <Text style={styles.text}>{resume?.summary}</Text>
+            <Text style={styles.text}>{resume.summary}</Text>
           </View>
         )}
 
@@ -154,9 +128,7 @@ export function ResumePDF({ resume }: { resume: ResumeData }) {
               <View key={i} style={{ marginBottom: 6 }}>
                 <Text style={styles.jobTitle}>{proj?.title}</Text>
                 {Array.isArray(proj?.tech) && proj.tech.length > 0 && (
-                  <Text style={[styles.italic, { fontSize: 10 }]}>
-                    {proj.tech.join(", ")}
-                  </Text>
+                  <Text style={[styles.italic, { fontSize: 10 }]}>{proj.tech.join(", ")}</Text>
                 )}
                 <Text style={styles.text}>{proj?.description}</Text>
               </View>
@@ -165,17 +137,16 @@ export function ResumePDF({ resume }: { resume: ResumeData }) {
         )}
 
         {/* Certifications */}
-        {Array.isArray(resume?.certifications) &&
-          resume.certifications.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Certifications</Text>
-              {resume.certifications.map((cert, i) => (
-                <Text key={i} style={styles.text}>
-                  • {cert}
-                </Text>
-              ))}
-            </View>
-          )}
+        {Array.isArray(resume?.certifications) && resume.certifications.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Certifications</Text>
+            {resume.certifications.map((cert, i) => (
+              <Text key={i} style={styles.text}>
+                • {cert}
+              </Text>
+            ))}
+          </View>
+        )}
 
         {/* Languages */}
         {Array.isArray(resume?.languages) && resume.languages.length > 0 && (
@@ -183,28 +154,14 @@ export function ResumePDF({ resume }: { resume: ResumeData }) {
             <Text style={styles.sectionTitle}>Languages</Text>
             {resume.languages.map((lang, i) => (
               <Text key={i} style={styles.text}>
-                {lang?.name} –{" "}
-                <Text style={styles.italic}>{lang?.proficiency}</Text>
+                {lang?.name} – <Text style={styles.italic}>{lang?.proficiency}</Text>
               </Text>
             ))}
           </View>
         )}
 
         {/* Page Numbers */}
-        <Text
-          style={{
-            position: "absolute",
-            fontSize: 9,
-            bottom: 20,
-            left: 0,
-            right: 0,
-            textAlign: "center",
-            color: "#888",
-          }}
-          render={({ pageNumber, totalPages }) =>
-            `Page ${pageNumber} of ${totalPages}`
-          }
-        />
+        <Text style={styles.footer} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
       </Page>
     </Document>
   )
